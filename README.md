@@ -67,6 +67,7 @@ Makefile                   # game commands
 - curl
 
 For first-time setup and pre-flight checks, see `FIRST_TIMERS.md`.
+If you get stuck or your environment is broken, see `EMERGENCY_HINTS_SOLUTIONS.md`.
 
 ## Standard game loop
 
