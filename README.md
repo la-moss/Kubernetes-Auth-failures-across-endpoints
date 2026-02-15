@@ -1,8 +1,8 @@
-# Week A — Production Incident Game (Kind + Kubernetes)
+# Kubernetes Authentication Failures Across Endpoints
 
 This is a live production-style incident simulation.
 
-You deploy a stack into a local Kubernetes cluster, observe runtime signals, and resolve failures under delivery pressure.
+You deploy a stack into a local Kubernetes (KIND) cluster, observe runtime signals, and resolve failures under delivery pressure.
 
 No static guardrails.  
 No lint puzzles.  
