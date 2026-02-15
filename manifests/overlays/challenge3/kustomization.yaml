@@ -1,0 +1,5 @@
+resources:
+  - ../../base
+patches:
+  - path: papi-config-patch.yaml
+  - path: sobrain-delay-patch.yaml

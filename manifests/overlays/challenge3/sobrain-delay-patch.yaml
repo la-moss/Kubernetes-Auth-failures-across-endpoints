@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sobrain
+  namespace: incident-lab
+spec:
+  template:
+    spec:
+      containers:
+        - name: sobrain
+          env:
+            - name: DELAY_MS
+              value: "1200"

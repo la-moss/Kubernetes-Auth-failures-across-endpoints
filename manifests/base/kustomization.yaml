@@ -1,0 +1,7 @@
+resources:
+  - namespace.yaml
+  - sobrain-deploy.yaml
+  - sobrain-svc.yaml
+  - papi-config.yaml
+  - papi-deploy.yaml
+  - papi-svc.yaml

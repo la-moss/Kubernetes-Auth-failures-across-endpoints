@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: papi
+  namespace: incident-lab
+  labels: { app: papi }
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: papi }
+  template:
+    metadata:
+      labels: { app: papi }
+    spec:
+      containers:
+        - name: papi
+          image: python:3.11-alpine
+          envFrom:
+            - configMapRef:
+                name: papi-config
+          env:
+            - name: SOBRAIN_URL
+              value: "http://sobrain:8080/"
+          command: ["python","-u","-c"]
+          args:
+            - |
+              import os, time, random, urllib.request
+              from http.server import BaseHTTPRequestHandler, HTTPServer
+              SOBRAIN=os.getenv("SOBRAIN_URL")
+              retries=int(os.getenv("RETRIES","0"))
+              timeout=float(os.getenv("TIMEOUT_S","1"))
+              backoff=int(os.getenv("BACKOFF_MS","0"))/1000.0
+              jitter=int(os.getenv("JITTER_MS","0"))/1000.0
+              map_to_auth=os.getenv("MAP_TIMEOUT_TO_AUTH","false").lower()=="true"
+              class H(BaseHTTPRequestHandler):
+                  def do_GET(self):
+                      if self.path == "/healthz":
+                          self.send_response(200); self.end_headers(); self.wfile.write(b"ok"); return
+                      last=None
+                      for i in range(retries+1):
+                          try:
+                              with urllib.request.urlopen(SOBRAIN, timeout=timeout) as r:
+                                  body=r.read()
+                              self.send_response(200); self.end_headers(); self.wfile.write(body); return
+                          except Exception as e:
+                              last=e
+                              time.sleep(backoff + (random.random()*jitter))
+                      if map_to_auth:
+                          self.send_response(401); self.end_headers(); self.wfile.write(b"InvalidToken")
+                      else:
+                          self.send_response(504); self.end_headers(); self.wfile.write(str(last).encode())
+                  def log_message(self, fmt, *args): pass
+              HTTPServer(("0.0.0.0", 8080), H).serve_forever()
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet: { path: "/healthz", port: 8080 }
+            initialDelaySeconds: 1
+            periodSeconds: 3

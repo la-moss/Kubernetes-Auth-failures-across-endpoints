@@ -1,0 +1,46 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: challenge1
+            overlay: manifests/overlays/challenge1
+            verify: verify-ch1
+          - name: challenge2
+            overlay: manifests/overlays/challenge2
+            verify: verify-ch2
+          - name: challenge3
+            overlay: manifests/overlays/challenge3
+            verify: verify-ch3
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kind + kubectl
+        run: |
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.23.0/kind-linux-amd64
+          chmod +x ./kind
+          sudo mv ./kind /usr/local/bin/kind
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/kubectl
+
+      - name: Create kind cluster
+        run: kind create cluster --name incident-lab --config kind/kind-config.yaml
+
+      - name: Deploy (${{ matrix.name }})
+        run: kubectl apply -k ${{ matrix.overlay }}
+
+      - name: Verify (${{ matrix.name }})
+        run: |
+          make ${{ matrix.verify }}
+
+      - name: Cleanup
+        if: always()
+        run: kind delete cluster --name incident-lab

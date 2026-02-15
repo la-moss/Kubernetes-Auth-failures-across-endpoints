@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: papi-config
+  namespace: incident-lab
+data:
+  RETRIES: "2"
+  TIMEOUT_S: "1.2"
+  BACKOFF_MS: "150"
+  JITTER_MS: "100"
+  MAP_TIMEOUT_TO_AUTH: "false"
